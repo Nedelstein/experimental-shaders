@@ -8,7 +8,7 @@ void main(){
     coord_N.y/=u_resolution.x/u_resolution.y;
     float sun=distance(vec2(.70,.9),coord_N);
     
-    coord_N.x+=u_time*1.5;
+    coord_N.x+=u_time*.5;
     float hill1=sin(coord_N.x*1.1)*.200;
     float hill2=sin(coord_N.x*15.)*.05;
     float hill3=sin(coord_N.x*21.1)*.02;

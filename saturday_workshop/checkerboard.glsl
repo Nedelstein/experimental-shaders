@@ -12,7 +12,7 @@ void main(){
     
     // float v = mod(x, 2.0);
     // float h = mod(y, 2.0);
-    // float g = abs(h - v);
+    //  g = abs(h - v);
     
     gl_FragColor=vec4(g,g,g,1.);
 }
