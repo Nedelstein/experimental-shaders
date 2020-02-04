@@ -19,12 +19,31 @@ const FS_SOURCE = `
     varying vec3 fragColor;
 
     uniform float u_time;
+    uniform vec2 u_resolution;
 
     void main(){
-        float d = abs(sin(u_time * .7)) + 0.3;
-        vec3 pos = vec3(d,d,d*2.);
-        pos *=fragColor;
-        gl_FragColor = vec4(pos,1.0);
+      vec2 coord = gl_FragCoord.xy / u_resolution;
+      vec3 color = vec3(0.0);
+
+
+      //watercolor sim below. multiply coord * 6
+      // for(int n = 1; n < 8; n++){
+      //   float i = float(n);
+      //   coord *= vec2(0.8 / i * sin(i * coord.y + u_time + 0.3 * i) + 0.8, 0.4 / i * sin(coord.x + u_time + 0.3 * i) + 1.6);
+      // } 
+
+      // coord += vec2(0.7* sin(coord.y + u_time + 0.3) + 0.8, 0.4 * sin(coord.x + u_time + 0.3) + 1.6);
+
+
+      color = vec3(0.5 * sin(coord.x) + 0.5, 0.5 * sin(coord.y) + 0.5, sin(coord.x + coord.y));
+
+        color += sin(coord.x * sin(u_time / 60.0) * 300.0) + sin(coord.y * cos(u_time / 60.0) * 90.0);
+        color += sin(coord.y * sin(u_time / 60.0) * 200.0) + sin(coord.x * cos(u_time / 20.0) * 120.0);
+
+        color *= sin(u_time / 5.0) * 0.5;
+
+        color *= fragColor;
+        gl_FragColor = vec4(color,1.0);
     }`;
 
 let InitDemo = () => {
@@ -79,12 +98,16 @@ let InitDemo = () => {
   }
 
   const u_time_location = gl.getUniformLocation(shader_program, "u_time");
+  const u_resolution_location = gl.getUniformLocation(
+    shader_program,
+    "u_resolution"
+  );
 
   //create buffer
   // prettier-ignore
   let triangleVerts = 
-  [ 0.0, 0.5, 0.0,   1.0,0.2,0.4,
-    -0.5, -0.5, 0.0, 0.2, 0.6, 0.9,
+  [ 0.0, 0.5, 0.0,   1.0,0.7,0.4,
+    -0.5, -0.5, 0.0, 0.6, 0.6, 0.9,
      0.5, -0.5, 0.0, 0.5, 0.2, 0.7
     ];
 
@@ -156,13 +179,15 @@ let InitDemo = () => {
   let startTime = Date.now();
   let angle = 0;
   function render() {
-    angle = (performance.now() / 1000 / 6) * 2 * Math.PI;
+    angle = (performance.now() / 1000 / 15) * 2 * Math.PI;
     glMatrix.mat4.rotate(worldMatrix, identityMatrix, angle, [0, 1, 0]);
     gl.uniformMatrix4fv(matWorldUniformLocation, false, worldMatrix);
 
     gl.uniform1f(u_time_location, (Date.now() - startTime) * 0.001);
 
-    gl.clearColor(0.3, 0.6, 0.6, 1.0);
+    gl.uniform2f(u_resolution_location, gl.canvas.width, gl.canvas.height);
+
+    gl.clearColor(0.8, 0.6, 0.6, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.Depth_BUFFER_BIT);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 
